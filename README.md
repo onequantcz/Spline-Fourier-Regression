@@ -38,7 +38,7 @@ o reduce overfitting, separate ridge penalties are applied for spline and fourie
 
 <img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/725dbe89-6441-4f0c-916f-06322a6586fd" /> <img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/4556ad94-bdc3-468d-958d-86da0e6ba9f5" />
 
-<img width="590" height="564" alt="image" src="https://github.com/user-attachments/assets/15a83143-a682-4798-a9b8-2aa9412c861a" /> <img width="594" height="560" alt="image" src="https://github.com/user-attachments/assets/9ae039db-e7df-4d39-93cc-11e6e66dc98a" />
+<img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/15a83143-a682-4798-a9b8-2aa9412c861a" /> <img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/9ae039db-e7df-4d39-93cc-11e6e66dc98a" />
 
 
 
