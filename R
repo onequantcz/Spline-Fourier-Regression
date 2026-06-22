@@ -256,8 +256,52 @@ cubical_spline <- function(y, X, K, knots, seasonal = TRUE, lambda_spline = 0, l
   return(list(beta = beta, estimate = estimate, errors = errors, predict = predict, classes = classes))
 }
 
+# ==========================================================
+# VISUAL COMPARISON
+# ==========================================================
+# Black line  - observed data
+# Red line    - true signal
+# Blue line   - model reconstruction / forecast
+# Forecast region is highlighted through class labels.
+# ==========================================================
 
-
+  n <- 100
+  m <- 25
+  t <- c(1:n)
+  i <- rnorm(n, 14, 2)
+  X <- as.matrix(t)
+  X_new <- as.matrix(c((n+1):(n + m)))
+  X <- rbind(X, X_new)
+  wn <- rnorm(n, 0, 30)
+  
+  y <- ((1.5 * t^1.5) + 12 * i^1.3 + 
+          40 * sin(t) + 200 * sin(t/3) + 25 * cos(t) + wn)
+  
+  true <- ((1.5 * t^1.5) + 12 * i^1.3 + 
+             40 * sin(t) + 200 * sin(t/3) + 25 * cos(t))
+  
+  qplot(x = t, y = y, geom = "line")
+  i <- rbind(as.matrix(i), as.matrix(rnorm(m, 14, 3)))
+  X <- cbind(X, i)
+  
+  model <- periodogram(diff(y))
+  df <- data.frame(I = model$I, freq = model$freq)
+  ggplot(data = df, mapping = aes(x = freq, y = I)) +
+    geom_point() +
+    geom_line()
+  
+  model_fit <- cubical_spline(y = y, X = X, K = 3, knots = 8, seasonal = TRUE, lambda_spline = 1, lambda_fourier = 5)
+  
+  y_s <- as.matrix(c(y, rep(NA, nrow(X_new))))
+  true_s <- as.matrix(c(true, rep(NA, nrow(X_new))))
+  df_fit <- data.frame(smooth = rbind(model_fit$estimate, model_fit$predict), y = y_s, class = model_fit$classes, t = c(1:nrow(X)), true = true_s)
+  
+  ggplot(data = df_fit, mapping = aes(x = t, y = y)) +
+      geom_line() +
+      geom_line(aes(y = smooth, color = class), size = 1) +
+      geom_line(aes(y = true), color = "red", size = 1.1)
+  
+  
 
 
 
