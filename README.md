@@ -40,7 +40,7 @@ To evaluate proposed framework, several synthetic datasets were generated contai
 
 <img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/725dbe89-6441-4f0c-916f-06322a6586fd" /> <img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/4556ad94-bdc3-468d-958d-86da0e6ba9f5" />
 
-<img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/205c0d62-916f-4b40-89cb-5f8469c516f3" /> <img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/3d0b4bc0-94d9-40a1-8061-63b575081e8a" />
+<img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/3d0b4bc0-94d9-40a1-8061-63b575081e8a" /> <img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/205c0d62-916f-4b40-89cb-5f8469c516f3" /> 
 
 
 
