@@ -1,2 +1,63 @@
+# ----------------------------------------------------------
+# Flexible Spline-Fourier Regression
+#
+# Parameters
+# ----------------------------------------------------------
+# y : numeric vector
+#     Target time series.
+#
+# X : matrix
+#     Matrix of explanatory variables.
+#     Future observations required for forecasting should already be appended to the bottom.
+#
+# K : integer
+#     Number of dominant frequencies extracted from the periodogram automatically. 
+#
+# knots : integer
+#     Total number of knots for cubic B-spline basis. Hyperparameter.
+#
+# seasonal : boolean
+#     Include Fourier seasonal terms.
+#
+# lambda_spline : numeric
+#     Ridge penalty applied to spline coefficients. Hyperparameter.
+#
+# lambda_fourier : numeric
+#     Ridge penalty applied to Fourier coefficients. Hyperparameter.
+#
+# Returns
+# ----------------------------------------------------------
+# beta      : estimated coefficients
+# estimate  : in-sample fitted values
+# errors    : residuals
+# predict   : out-of-sample forecasts
+# ----------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
