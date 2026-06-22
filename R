@@ -33,11 +33,228 @@
 # predict   : out-of-sample forecasts
 # ----------------------------------------------------------
 
+# ==========================================================
+# PERIODGRAM ESTIMATION
+# ==========================================================
 
+periodogram <- function(y) {
+  
+  t <- length(y)
+  
+  w <- numeric(floor(t/2))
+  k <- c(0:(length(w)))
+  alpha <- 2*pi*k/t
+  
+  I <- numeric(length(alpha))
+  
+  # Time index
+  v <- c(0:(t-1)) 
+  
+  # Discrete Fourier Transform
+  for (j in 1:length(alpha)) {
+    X <- sum(y * exp(-1i * alpha[j] * v))
+    I[j] <- (1/t) * Mod(X)^2
+  }
+  
+  return(list(alpha = alpha, freq = k / t, I = I))
+}
 
+# ==========================================================
+# SPLINE-FOURIER REGRESSION
+# ==========================================================
 
+cubical_spline <- function(y, X, K, knots, seasonal = TRUE, lambda_spline = 0, lambda_fourier = 0) { 
 
+  # --------------------------------------------------------
+  # Forecast horizon
+  # Future observations are assumed to be appended
+  # at the bottom of X.
+  # --------------------------------------------------------
+  
+  h <- nrow(X) - length(y)
 
+  # --------------------------------------------------------
+  # Min-Max normalization
+  # Each explanatory variable is scaled to [0,1].
+  # Spline bases are defined on this interval.
+  #
+  # Scaling parameters are estimated only on the
+  # training part of the sample.
+  # --------------------------------------------------------
+  
+  min <- numeric(ncol(X)) 
+  spread <- numeric(ncol(X))
+  for (i in 1:ncol(X)) {
+    min[i] <- min(X[1:(nrow(X) - h), i])
+    spread[i] <- (max(X[1:(nrow(X) - h), i]) - min(X[1:(nrow(X) - h), i]))
+    #min <- min(X[, i])
+    #spread[i] <- (max(X[, i]) - min(X[, i]))
+    X[, i] <- (X[, i] - min[i]) / spread[i]
+  }
+
+  # --------------------------------------------------------
+  # Cubic B-spline knot sequence
+  # p = spline degree
+  # Boundary knots are repeated to obtain
+  # a clamped cubic spline basis.
+  # --------------------------------------------------------
+  
+  p <- 3
+  t <- numeric(knots)
+  t[1:3] <- 0
+  t[(knots - 2):knots] <- 1
+  t[4:(knots - 3)] <- seq(0, 1, length.out = (knots - 6))
+
+  # --------------------------------------------------------
+  # Storage for spline basis matrices
+  # One spline basis is constructed
+  # for every explanatory variable.
+  # --------------------------------------------------------
+  
+  B <- vector("list", ncol(X))
+  for (j in 1:ncol(X)) {
+    B[[j]] <- matrix(0, nrow = nrow(X), ncol = (knots - 4))
+  }
+
+  # --------------------------------------------------------
+  # Cox–de Boor recursion
+  # Constructs cubic B-spline basis functions
+  # for every observation and every explanatory
+  # variable.
+  # --------------------------------------------------------
+  
+  for (i in 1:nrow(X)) {
+    for (j in 1:ncol(X)) {
+      
+      tmp <- matrix(0, nrow = (p + 1), ncol = (knots - 4))
+      
+      # Degree 0 basis functions
+      for (k in 1:(knots - 4)) {
+        tmp[1, k] <- as.numeric(X[i, j] >= t[k] && X[i, j] < t[k + 1])
+      }
+      
+      # Ensure x = 1 belongs to the last spline segment.
+      if (X[i, j] >= 1 - 1e-12) {
+        tmp[1, (knots - 4)] <- 1
+      }
+      
+      # Builds spline basis of degree 1,2,3
+      for (d in 1:p) {
+        for (k in 1:(knots - 4)) {
+          
+          term1 <- 0
+          if ((t[k + d] - t[k]) != 0) {
+            term1 <- ((X[i, j] - t[k]) / (t[k + d] - t[k])) * tmp[d, k]
+          }
+          
+          term2 <- 0
+          if (k < (knots - 4)) {
+            if ((t[k + d + 1] - t[k + 1]) != 0) {
+              term2 <- ((t[k + d + 1] - X[i, j]) / (t[k + d + 1] - t[k + 1])) * tmp[d, k + 1]
+            }
+          }
+          
+          tmp[d + 1, k] <- term1 + term2
+        }
+      }
+      
+      B[[j]][i, ] <- tmp[p + 1, ]
+    }
+  }
+
+  # --------------------------------------------------------
+  # Final spline design matrix
+  # --------------------------------------------------------
+  
+  X_spline <- do.call(cbind, B)
+
+  # --------------------------------------------------------
+  # Automatic frequency selection
+  # Dominant frequencies are extracted from
+  # the periodogram according to spectral power.
+  # K controls how many frequencies are retained.
+  # --------------------------------------------------------
+  
+  w <- ((periodogram(y)$freq[-1])[order(periodogram(y)$I[-1], decreasing = TRUE)])[1:K]
+  
+  tmp <- vector("list", K)
+  for (i in 1:length(w)) {
+    fourier_sin <- numeric(nrow(X))
+    fourier_cos <- numeric(nrow(X))
+    fourier_sin <- sin(2 * pi * w[i] * c(1:nrow(X)))
+    fourier_cos <- cos(2 * pi * w[i] * c(1:nrow(X)))
+    tmp[[i]] <- cbind(fourier_sin, fourier_cos)
+  }
+
+  # --------------------------------------------------------
+  # Optional removal of seasonal component
+  # --------------------------------------------------------
+  
+  X_fourier <- do.call(cbind, tmp)
+  if (seasonal == FALSE) {X_fourier <- matrix(0, nrow=nrow(X), ncol=0)}
+
+  # --------------------------------------------------------
+  # Ridge penalty matrix
+  # Different penalties may be applied to:
+  # - spline coefficients
+  # - Fourier coefficients
+  # Intercept is never penalized.
+  # --------------------------------------------------------
+  
+  P <- diag(c(0, rep(lambda_spline, ncol(X_spline)), rep(lambda_fourier, ncol(X_fourier))))
+  X_model <- cbind(rep(1, nrow(X)), X_spline, X_fourier)
+  
+  X_predict <- X_model[(nrow(X_model) - h + 1):nrow(X_model), ]
+  X_learn <- X_model[1:(nrow(X_model) - h), ]
+  classes <- numeric(nrow(X))
+  classes[1:(nrow(X_model) - h)] <- "learn"
+  classes[(nrow(X_model) - h + 1):nrow(X_model)] <- "predict"
+
+  # --------------------------------------------------------
+  # Remove near-constant regressors
+  # Prevents singularities and numerical instability.
+  # --------------------------------------------------------
+  
+  keep <- c(TRUE, apply(X_learn[, -1, drop = FALSE], 2, sd) > 1e-8)
+  X_learn <- X_learn[, keep, drop = FALSE]
+  X_predict <- X_predict[, keep, drop = FALSE]
+  P <- P[keep, keep, drop = FALSE]
+
+  # --------------------------------------------------------
+  # Z-score standardization
+  # Performed after basis construction.
+  # Means and standard deviations are estimated
+  # from training observations only.
+  # --------------------------------------------------------
+  
+  mu <- numeric(ncol(X_learn))
+  std <- numeric(ncol(X_learn))
+  for (i in 2:ncol(X_learn)) {
+    mu[i-1] <- mean(X_learn[, i])
+    std[i-1] <- sd(X_learn[, i])
+    X_learn[, i] <- (X_learn[, i] - mean(X_learn[, i])) / sd(X_learn[, i])
+  }
+  
+  for (i in 2:ncol(X_predict)) {
+    X_predict[, i] <- (X_predict[, i] - mu[i-1]) / std[i-1]
+  }
+  
+  
+  beta <- as.vector(solve(t(X_learn) %*% X_learn + P) %*% t(X_learn) %*% y)
+  
+  # --------------------------------------------------------
+  # In-sample fitted values
+  # --------------------------------------------------------
+  estimate <- X_learn %*% as.matrix(beta)
+  errors <- y - estimate
+  
+  # --------------------------------------------------------
+  # Out-of-sample forecast
+  # --------------------------------------------------------
+  predict <- X_predict %*% as.matrix(beta)
+  
+  return(list(beta = beta, estimate = estimate, errors = errors, predict = predict, classes = classes))
+}
 
 
 
