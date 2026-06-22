@@ -23,7 +23,14 @@ This project aims to build a general-purpose regression framework that:
 - Remains interpretable.
 - Can be further extended in Biasian paradigm with simulations. 
 
+## Mathematical Formulation
+The model is basically
 
 <img width="679" height="83" alt="image" src="https://github.com/user-attachments/assets/92d7336c-9970-4cc1-a934-90328a40ce37" />
 
+Each explanatory variable is transformed into a cubic B-spline basis (polynomial function, 3. degree). This allows the model to learn highly non-linear relationships while preserving smoothness. 
+
+Seasonality is extracted through the periodogram. The frequencies corresponding to the largest spectral peaks are selected. This allows automatic discovery of seasonal patterns without specifying their periods manually. 
+
+o reduce overfitting, separate ridge penalties are applied for spline and fourier coefficients. 
 
