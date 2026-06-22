@@ -21,7 +21,7 @@ This project aims to build a general-purpose regression framework that:
 - Supports exogenous variables.
 - Uses regularization to prevent overfitting.
 - Remains interpretable.
-- Can be further extended in Biasian paradigm with simulations. 
+- Can be further extended in Bayesian paradigm with simulations. 
 
 ## Mathematical Formulation
 The model is basically
