@@ -20,7 +20,6 @@ This project aims to build a general-purpose regression framework that:
 - Automatically extracts dominant seasonal frequencies.
 - Supports exogenous variables.
 - Uses regularization to prevent overfitting.
-- Remains interpretable.
 
 ## Mathematical Formulation
 The model is basically
