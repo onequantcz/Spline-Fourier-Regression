@@ -11,6 +11,19 @@ The model combines:
 
 The goal is to provide a highly flexible non-linear forecasting model capable of approximating arbitrary smooth relationships while automatically extracting dominant seasonal patterns. Should be used NOT for interpretability, but rather for fitting and exprapolating time series with hard non-linear structure with different regimes.
 
+## Motivation
+
+Classical linear regression often fails to capture non-linear effects. ARIMA-type models assume a specific stochastic structure. However, some time series (aspecially related to demand or product-driven) either have no reliable hypothesis of stochastic structure, or obvious solution could be very complicated computationaly. 
+This project aims to build a general-purpose regression framework that:
+
+- Learns arbitrary smooth effects of explanatory variables.
+- Automatically extracts dominant seasonal frequencies.
+- Supports exogenous variables.
+- Uses regularization to prevent overfitting.
+- Remains interpretable.
+- Can be further extended in Biasian paradigm with simulations. 
+
+
 <img width="679" height="83" alt="image" src="https://github.com/user-attachments/assets/92d7336c-9970-4cc1-a934-90328a40ce37" />
 
 
