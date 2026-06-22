@@ -36,11 +36,13 @@ o reduce overfitting, separate ridge penalties are applied for spline and fourie
 
 ## Simulations and visualisation
 
+To evaluate proposed framework, several synthetic datasets were generated containing nonlinear trend dynamics, multiple seasonal components, exogenous effects, and additive Gaussian noise(more in R folder). The objective was to assess whether the model could simultaneously recover smooth nonlinear structure and automatically identify periodic patterns through spectral analysis.
+
 <img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/725dbe89-6441-4f0c-916f-06322a6586fd" /> <img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/4556ad94-bdc3-468d-958d-86da0e6ba9f5" />
 
 <img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/15a83143-a682-4798-a9b8-2aa9412c861a" /> <img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/9ae039db-e7df-4d39-93cc-11e6e66dc98a" />
 
-
+Several spectral peaks can be observed, indicating that a significant part of the signal is concentrated within a relatively small number of frequencies. This is precisely the situation for which fourier-based decomposition is most effective. Rather than requiring the user to manually specify seasonal periods, the model identifies dominant frequencies directly from the data and incorporates them into the regression through sine and cosine basis functions. The fitted series demonstrates that the model successfully captures both the long-run trend and the cyclical behavior of the signal.
 
 
 
